@@ -5,15 +5,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * Created by liuqinghua on 16-9-8.
+ * Created by liuqinghua on 16-9-9.
  */
-
 @Controller
-public class IndexController {
+public class SpiderController {
 
-    @RequestMapping(path = {"/", "/index"}, method = {RequestMethod.GET})
-    public String indexController(){
-        return "index";
+
+    @RequestMapping(path = {"/spider"}, method = {RequestMethod.GET})
+    public String spider(){
+        return "spider";
     }
+
+
 
 }
