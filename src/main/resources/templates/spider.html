@@ -5,6 +5,19 @@
     <title>爬虫启动页</title>
 </head>
 <body>
-    爬虫启动页
+    <form action="stepSpider" method="POST">
+        <table>
+            <tr>
+                <td>SVN起始目录</td>
+                <td><input type="text" name="SVNURL" ></td>
+                <td><input type="text" name="username" ></td>
+                <td><input type="password" name="password" ></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="开始爬取"></td>
+            </tr>
+        </table>
+    </form>
 </body>
 </html>

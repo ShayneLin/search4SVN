@@ -2,6 +2,7 @@ package com.shark.search4SVN.service;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +27,6 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 * @date 2016年6月29日 下午2:39:13 
 * @version V1.0   
 */
-@Service
 public class SVNService {
 	private static Logger logger = Logger.getLogger(SVNService.class);
 	
@@ -48,22 +48,37 @@ public class SVNService {
 		DefaultSVNOptions options = new DefaultSVNOptions();
 		manager = SVNClientManager.newInstance(options,userName,passwd);
 	}
+
 	
 	/**获取文档内容
 	 * @param url
 	 * @return
 	 */
-	public byte[] checkoutFile(String url){//"", -1, null
+	public Object[] checkoutFile(String url){//"", -1, null
 		SVNRepository repository = createRepository(url);
+		ByteArrayOutputStream outputStream = null;
 		try {
 			SVNDirEntry entry = repository.getDir("", -1, false, null);
 			int size = (int)entry.getSize();
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream(size);
+			outputStream = new ByteArrayOutputStream(size);
 			SVNProperties properties = new SVNProperties();
 			repository.getFile("", -1, properties, outputStream);
-			return outputStream.toByteArray();
+
+			Object[] objects = new Object[2];
+			objects[0] = entry;
+			objects[1] = outputStream.toByteArray();
+
+			return objects;
 		} catch (SVNException e) {
 			e.printStackTrace();
+		}finally {
+			if(outputStream != null){
+				try {
+					outputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		return null;
 	}
