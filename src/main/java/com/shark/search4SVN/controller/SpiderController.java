@@ -1,7 +1,10 @@
 package com.shark.search4SVN.controller;
 
+import com.shark.search4SVN.service.ScheduleService;
+import com.shark.search4SVN.util.ThreadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class SpiderController {
 
     private static final Logger logger = LoggerFactory.getLogger(SpiderController.class);
+
+    @Autowired
+    private ThreadManager threadManager;
 
     @RequestMapping(path = {"/spider"}, method = {RequestMethod.GET})
     public String spider(){
@@ -32,6 +38,12 @@ public class SpiderController {
         logger.debug("svnURl : " + svnUrl);
 
 
+        ScheduleService scheduleService = new ScheduleService();
+        scheduleService.init(svnUrl, username, password);
+
+        threadManager.submitTask("0", scheduleService);
+
+        //TODO 直接跳转到监控页面
         return "index";
     }
 
@@ -43,4 +55,7 @@ public class SpiderController {
         return "error:" + e.getMessage();
     }
 
+    public void setThreadManager(ThreadManager threadManager) {
+        this.threadManager = threadManager;
+    }
 }
