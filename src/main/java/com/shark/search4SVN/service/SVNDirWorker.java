@@ -55,6 +55,8 @@ public class SVNDirWorker implements Runnable {
                      }
                  }
              }
+
+             jedisAdapter.sadd(Constants.FINISHEDURL, url);
          }
     }
 }

@@ -73,6 +73,7 @@ public class SVNFileWorker implements Runnable {
                 String json = JSONObject.toJSONString(document);
 
                 jedisAdapter.sadd(Constants.SOLRDOC, json);
+                jedisAdapter.sadd(Constants.FINISHEDURL, url);
 
             }catch(IOException e){
                 logger.error(e.getMessage(), e);

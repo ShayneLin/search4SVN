@@ -32,6 +32,8 @@ public class ScheduleService implements Runnable {
         SVNDirWorker svnDirWorker = new SVNDirWorker(svnService);
         SVNFileWorker svnFileWorker = new SVNFileWorker(svnService);
         SolrWorker solrWorker = new SolrWorker();
+        JedisAdapter jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
+        jedisAdapter.sadd(Constants.SOLRDOC, url);
 
         threadManager.submitTask("1", svnDirWorker);
         threadManager.submitTask("2", svnFileWorker);

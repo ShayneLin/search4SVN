@@ -26,6 +26,7 @@ public class SpiderController {
     }
 
     @RequestMapping(path = {"/stepSpider"}, method={RequestMethod.POST})
+    @ResponseBody
     public String stepSpider(@RequestParam(value = "SVNURL", defaultValue = "") String svnUrl,
                              @RequestParam(value = "username", defaultValue = "") String username,
                              @RequestParam(value = "password", defaultValue = "") String password) throws Exception {
@@ -43,8 +44,9 @@ public class SpiderController {
 
         threadManager.submitTask("0", scheduleService);
 
+        String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";
         //TODO 直接跳转到监控页面
-        return "index";
+        return responseBody;
     }
 
 

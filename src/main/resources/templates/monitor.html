@@ -5,6 +5,43 @@
     <title>监控页面</title>
 </head>
 <body>
-
+    <table>
+        <tr>
+            <td>已遍历的URL</td>
+        </tr>
+        <#list finishURLs as finishURL>
+            <tr>
+                <td>
+                    ${finishURL}
+                </td>
+            </tr>
+        </#list>
+        <tr>
+            <td>-----------------------</td>
+        </tr>
+        <tr>
+            <td>正在遍历的目录</td>
+        </tr>
+        <#list svnDirs as svnDir>
+            <tr>
+                <td>
+                    ${svnDir}
+                </td>
+            </tr>
+        </#list>
+        <tr>
+            <td>-----------------------</td>
+        </tr>
+        <tr>
+            <td>正在遍历的文件</td>
+        </tr>
+        <#list svnFiles as svnFile>
+            <tr>
+                <td>
+                    ${svnFile}
+                </td>
+            </tr>
+        </#list>
+    </table>
 </body>
 </html>

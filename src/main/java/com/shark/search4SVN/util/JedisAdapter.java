@@ -115,6 +115,22 @@ public class JedisAdapter implements InitializingBean {
         return false;
     }
 
+    public Set<String> smembers(String key) {
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            Set<String> values = jedis.smembers(key);
+            return values;
+        } catch (Exception e) {
+            logger.error("发生异常" + e.getMessage());
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return null;
+    }
+
     @Component
     @ConfigurationProperties(prefix = "search4SVN.redis", locations = "classpath:config/search4SVN.properties")
     static class RedisProperties{
