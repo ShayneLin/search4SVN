@@ -17,7 +17,7 @@ public class SVNServiceTest {
          String url = "http://192.168.0.11:8081/svn/netca/产品/业务运营管理平台/src/trunk/PKIDemo/readme.txt";
          //String url = "http://192.168.0.11:8081/svn/netca/产品/业务运营管理平台/3.设计";
  		 SVNService svn = new SVNService(username, password);
- 		 byte[] bytes = svn.checkoutFile(url);
+ 		 Object[] bytes = svn.checkoutFile(url);
  		 System.out.println(bytes.length);
  		/* String xml = svn.checkoutFileToString(url);
 		  
@@ -44,13 +44,13 @@ public class SVNServiceTest {
 	 			   }else{
 	 				  
 	 				  String newUrl = url + "/" + entry.getRelativePath();
-	 				  byte[] bytes = svn.checkoutFile(newUrl);
+					   Object[] bytes = svn.checkoutFile(newUrl);
 	 				  
 	 				  Tika tika = new Tika();
 	 				  
-	 				  String mimeType = tika.detect(bytes);
+	 				  //String mimeType = tika.detect(bytes);
 	 				  
-	 				  System.out.println(entry.getName() + " 类型为  " + mimeType + " 大小为 " + entry.getSize() + " Byte(字节)");
+	 				  //System.out.println(entry.getName() + " 类型为  " + mimeType + " 大小为 " + entry.getSize() + " Byte(字节)");
 	 				   
 	 			   }
 	 		 }

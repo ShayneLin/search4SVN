@@ -2,9 +2,11 @@ package com.shark.search4SVN.service;
 
 import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.util.SolrAdapter;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -16,8 +18,9 @@ public class SearchService {
     private SolrAdapter solrAdapter;
 
 
-    public List<SVNDocument> searchByKey(String searchKey){
-        return null;
+    public List<SVNDocument> searchByKey(String searchKey) throws IOException, SolrServerException {
+        List<SVNDocument> docs = solrAdapter.searchSolrDocment(searchKey);
+        return docs;
     }
 
     public void setSolrAdapter(SolrAdapter solrAdapter) {

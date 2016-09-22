@@ -5,6 +5,15 @@
     <title>Title</title>
 </head>
 <body>
-
+    <table>
+        <tr>
+            <td>文档</td>
+            <td>SVN地址</td>
+        </tr>
+        <#list searchResults as searchResult>
+            <td>${searchResult.docName}</td>
+            <td>${searchResult.svnUrl}</td>
+        </#list>
+    </table>
 </body>
 </html>
