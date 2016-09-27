@@ -22,7 +22,7 @@ public class ScheduleService implements Runnable {
 
 
     public void init(String svnurl, String username, String pwd){
-        this.url = url;
+        this.url = svnurl;
         svnService = new SVNService();
         svnService.init(username, pwd);
     }

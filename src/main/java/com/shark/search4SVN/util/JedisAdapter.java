@@ -24,14 +24,14 @@ public class JedisAdapter implements InitializingBean {
     private JedisPool pool;
 
     @Autowired
-    private RedisProperties redisProperties;
+    private JedisProperties jedisProperties;
 
 
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        String url = redisProperties.url;
-        String db = redisProperties.db;
+        String url = jedisProperties.getUrl();
+        String db = jedisProperties.getDb();
 
         logger.debug(String.format("redis locations: %s, db: %s", url, db));
 
@@ -131,18 +131,7 @@ public class JedisAdapter implements InitializingBean {
         return null;
     }
 
-    @Component
-    @ConfigurationProperties(prefix = "search4SVN.redis", locations = "classpath:config/search4SVN.properties")
-    static class RedisProperties{
-        private String url;
-        private String db;
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public void setDb(String db) {
-            this.db = db;
-        }
+    public void setJedisProperties(JedisProperties jedisProperties) {
+        this.jedisProperties = jedisProperties;
     }
 }

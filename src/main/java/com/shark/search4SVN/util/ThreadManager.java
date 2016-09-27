@@ -28,7 +28,7 @@ public class ThreadManager implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         //根据 当前机器的配置来决定 线程的数量
         int threadNum = Runtime.getRuntime().availableProcessors();
-
+        logger.info("ThreadManager  num " + threadNum);
         fixedThreadPool = Executors.newFixedThreadPool(threadNum);
     }
 
@@ -36,6 +36,6 @@ public class ThreadManager implements InitializingBean {
      * 提交任务
      */
     public void submitTask(String uuid, Runnable task){
-        fixedThreadPool.submit(task);
+        fixedThreadPool.execute(task);
     }
 }

@@ -45,7 +45,13 @@ public class SVNFileWorker implements Runnable {
                 if (StringUtils.isEmpty(url)) {
                     continue;
                 }
-
+                /**
+                 * 如果不是指定的文件类型的话，则直接跳过
+                 */
+                if(!url.endsWith("doc") && !url.endsWith("docx") && !url.endsWith("pdf") && !url.endsWith("java")
+                        && !url.endsWith("pdf") && !url.endsWith("xlsx") && !url.endsWith("xls") && !url.endsWith("txt")){
+                    continue;
+                }
                 Object[] objects = svnService.checkoutFile(url);
 
                 if(objects == null || objects.length != 2){

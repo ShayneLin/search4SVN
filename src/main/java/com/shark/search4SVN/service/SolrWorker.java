@@ -29,10 +29,11 @@ public class SolrWorker implements Runnable {
                 ThreadUtls.sleep(5000);
 
                 String solrDocStr = jedisAdapter.spop(Constants.SOLRDOC);
-                SVNDocument svnDoc = (SVNDocument) JSONObject.parse(solrDocStr);
+                logger.info(solrDocStr);
 
-                solrAdapter.addSolrDocument(svnDoc);
+                //SVNDocument svnDoc = (SVNDocument) JSONObject.parse(solrDocStr);
 
+                //solrAdapter.addSolrDocument(svnDoc);
             }catch(Exception e){
                 logger.error(e.getMessage(), e);
                 continue;

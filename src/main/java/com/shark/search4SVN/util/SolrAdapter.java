@@ -4,7 +4,6 @@ import com.shark.search4SVN.pojo.SVNDocument;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
@@ -12,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -31,13 +29,13 @@ public class SolrAdapter implements InitializingBean {
     private SolrClient solrClient;
 
     @Autowired
-    private SolrProperties solrProperties;
+    private SolrConnProperties solrConnProperties;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String url = solrProperties.url;
+        //String url = solrProperties.url;
 
-        solrClient = new HttpSolrClient.Builder(url).build();
+        //solrClient = new HttpSolrClient.Builder(url).build();
     }
 
     public void addSolrDocument(SVNDocument document){
@@ -82,22 +80,11 @@ public class SolrAdapter implements InitializingBean {
         return docs;
     }
 
-
-
-
-
-    public void setSolrProperties(SolrProperties solrProperties) {
-        this.solrProperties = solrProperties;
+    public SolrConnProperties getSolrConnProperties() {
+        return solrConnProperties;
     }
 
-
-    @Component
-    @ConfigurationProperties(prefix = "search4SVN.solr", locations = "classpath:config/search4SVN.properties")
-    static class SolrProperties{
-        private String url;
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
+    public void setSolrConnProperties(SolrConnProperties solrConnProperties) {
+        this.solrConnProperties = solrConnProperties;
     }
 }

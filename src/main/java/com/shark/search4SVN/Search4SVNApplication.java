@@ -1,15 +1,13 @@
 package com.shark.search4SVN;
-import com.shark.search4SVN.util.Search4SVNContext;
+import com.shark.search4SVN.util.*;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 
 
 @SpringBootApplication
+@EnableConfigurationProperties({JedisProperties.class,  SolrConnProperties.class})
 public class Search4SVNApplication {
 
     public static void main(String[] args) {

@@ -36,7 +36,7 @@ public class SpiderController {
             throw new Exception("svnUrl, username, password： one of them is null ");
         }
 
-        logger.debug("svnURl : " + svnUrl);
+        logger.info("svnURl : " + svnUrl);
 
 
         ScheduleService scheduleService = new ScheduleService();
