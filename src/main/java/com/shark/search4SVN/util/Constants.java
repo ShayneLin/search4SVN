@@ -11,5 +11,5 @@ public class Constants {
 
     public static String SOLRDOC = "com.shark.search4SVN.Solr";
 
-    public static String FINISHEDURL = "com.shark.search4SVn.finishedDoc";
+    public static String FINISHEDURL = "com.shark.search4SVN.finishedDoc";
 }

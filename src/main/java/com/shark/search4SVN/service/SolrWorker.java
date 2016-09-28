@@ -29,7 +29,7 @@ public class SolrWorker implements Runnable {
                 ThreadUtls.sleep(5000);
 
                 String solrDocStr = jedisAdapter.spop(Constants.SOLRDOC);
-                logger.info(solrDocStr);
+                logger.info("拔取的内容为 " + solrDocStr);
 
                 //SVNDocument svnDoc = (SVNDocument) JSONObject.parse(solrDocStr);
 

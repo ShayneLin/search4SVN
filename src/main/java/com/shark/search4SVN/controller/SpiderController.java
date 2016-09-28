@@ -41,7 +41,7 @@ public class SpiderController {
 
         ScheduleService scheduleService = new ScheduleService();
         scheduleService.init(svnUrl, username, password);
-
+        scheduleService.setThreadManager(threadManager);
         threadManager.submitTask("0", scheduleService);
 
         String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";

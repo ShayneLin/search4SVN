@@ -17,7 +17,6 @@ public class ScheduleService implements Runnable {
     private SVNService svnService;
     private String url;
 
-    @Autowired
     private ThreadManager threadManager;
 
 
@@ -33,7 +32,7 @@ public class ScheduleService implements Runnable {
         SVNFileWorker svnFileWorker = new SVNFileWorker(svnService);
         SolrWorker solrWorker = new SolrWorker();
         JedisAdapter jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
-        jedisAdapter.sadd(Constants.SOLRDOC, url);
+        jedisAdapter.sadd(Constants.SVNDIRKEY, url);
 
         threadManager.submitTask("1", svnDirWorker);
         threadManager.submitTask("2", svnFileWorker);
@@ -56,4 +55,5 @@ public class ScheduleService implements Runnable {
     public void setThreadManager(ThreadManager threadManager) {
         this.threadManager = threadManager;
     }
+
 }
