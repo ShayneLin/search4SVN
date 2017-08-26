@@ -15,22 +15,23 @@ import java.util.Date;
  */
 @Aspect
 @Component
-public class LogAspect {
-    private static final Logger logger = LoggerFactory.getLogger(LogAspect.class);
+public class ControllerLogAspect {
+    private static final Logger logger = LoggerFactory.getLogger(ControllerLogAspect.class);
 
     @Before("execution(* com.shark.search4SVN.controller.*Controller.*(..))")
     public void beforeMethod(JoinPoint joinPoint) {
+        String methodName = joinPoint.getSignature().getName();
         StringBuilder sb = new StringBuilder();
         for (Object arg : joinPoint.getArgs()) {
             if (arg != null) {
                 sb.append("arg:" + arg.toString() + "|");
             }
         }
-        logger.info("before method:" + sb.toString());
+        logger.info(methodName + "before method:" + sb.toString());
     }
 
-    @After("execution(* com.shark.search4SVN.controller.*Controller.*(..))")
+   /* @After("execution(* com.shark.search4SVN.controller.*Controller.*(..))")
     public void afterMethod() {
         logger.info("after method" + new Date());
-    }
+    }*/
 }

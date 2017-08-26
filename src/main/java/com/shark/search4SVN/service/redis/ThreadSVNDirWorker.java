@@ -1,11 +1,11 @@
-package com.shark.search4SVN.service;
+package com.shark.search4SVN.service.redis;
 
+import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.util.Constants;
 import com.shark.search4SVN.util.JedisAdapter;
 import com.shark.search4SVN.util.Search4SVNContext;
-import com.shark.search4SVN.util.ThreadUtls;
+import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -15,16 +15,17 @@ import java.util.List;
 /**
  * Created by liuqinghua on 16-9-10.
  */
-public class SVNDirWorker implements Runnable {
+@Deprecated
+public class ThreadSVNDirWorker implements Runnable {
 
-    private static Logger logger = Logger.getLogger(SVNDirWorker.class);
+    private static Logger logger = Logger.getLogger(ThreadSVNDirWorker.class);
 
 
     private JedisAdapter jedisAdapter;
 
     private SVNService svnService = null;
 
-    public SVNDirWorker(SVNService svnService){
+    public ThreadSVNDirWorker(SVNService svnService){
         this.svnService = svnService;
         this.jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
     }
@@ -32,8 +33,8 @@ public class SVNDirWorker implements Runnable {
     @Override
     public void run() {
 
-         while(!ScheduleService.isStop()){
-             ThreadUtls.sleep(2000);
+         while(!ThreadScheduleService.isStop()){
+             ThreadUtils.sleep(2000);
 
              String url = jedisAdapter.spop(Constants.SVNDIRKEY);
              if(StringUtils.isEmpty(url)){

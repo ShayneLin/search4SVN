@@ -1,18 +1,16 @@
-package com.shark.search4SVN.service;
+package com.shark.search4SVN.service.redis;
 
-import com.shark.search4SVN.util.Constants;
-import com.shark.search4SVN.util.JedisAdapter;
-import com.shark.search4SVN.util.Search4SVNContext;
-import com.shark.search4SVN.util.ThreadManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.shark.search4SVN.service.SVNService;
+import com.shark.search4SVN.util.*;
 import org.springframework.stereotype.Service;
 
 /**
  * Created by liuqinghua on 16-9-10.
  * 任务线程(scheduleThread)
  */
+@Deprecated
 @Service
-public class ScheduleService implements Runnable {
+public class ThreadScheduleService implements Runnable {
 
     private SVNService svnService;
     private String url;
@@ -28,9 +26,9 @@ public class ScheduleService implements Runnable {
 
     @Override
     public void run() {
-        SVNDirWorker svnDirWorker = new SVNDirWorker(svnService);
-        SVNFileWorker svnFileWorker = new SVNFileWorker(svnService);
-        SolrWorker solrWorker = new SolrWorker();
+        ThreadSVNDirWorker svnDirWorker = new ThreadSVNDirWorker(svnService);
+        ThreadSVNFileWorker svnFileWorker = new ThreadSVNFileWorker(svnService);
+        ThreadSolrWorker solrWorker = new ThreadSolrWorker();
         JedisAdapter jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
         jedisAdapter.sadd(Constants.SVNDIRKEY, url);
 
@@ -55,5 +53,6 @@ public class ScheduleService implements Runnable {
     public void setThreadManager(ThreadManager threadManager) {
         this.threadManager = threadManager;
     }
+
 
 }

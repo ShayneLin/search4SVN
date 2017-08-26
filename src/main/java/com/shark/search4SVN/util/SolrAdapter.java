@@ -13,6 +13,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +22,7 @@ import java.util.List;
 /**
  * Created by liuqinghua on 16-9-13.
  */
-@Component
-@Scope("prototype")
+@Service("solrAdapter")
 public class SolrAdapter implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(SolrAdapter.class);
@@ -35,7 +35,7 @@ public class SolrAdapter implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         //String url = solrProperties.url;
 
-        //solrClient = new HttpSolrClient.Builder(url).build();
+        ///solrClient = new HttpSolrClient.Builder(url).build();
     }
 
     public void addSolrDocument(SVNDocument document){
@@ -61,7 +61,7 @@ public class SolrAdapter implements InitializingBean {
         List<SVNDocument> docs = new ArrayList<SVNDocument>();
 
         SolrQuery query = new SolrQuery(keyword);
-        query.setFields("revison","svnurl","docName", "lastUpdateTime");
+        query.setFields("revison","svnurl","docName", "lastUpdateTime", "author");
         //query.setSort("lastUpdateTime", ORDER.desc);
         query.setStart(0);
         query.setRows(50);
@@ -75,16 +75,9 @@ public class SolrAdapter implements InitializingBean {
             d.setRevision(doc.getFieldValue("revison").toString());
             d.setSvnUrl(doc.getFieldValue("svnurl").toString());
             d.setDocName(doc.getFieldValue("docName").toString());
+            d.setLastModifyAuthor(doc.getFieldValue("author").toString());
             docs.add(d);
         }
         return docs;
-    }
-
-    public SolrConnProperties getSolrConnProperties() {
-        return solrConnProperties;
-    }
-
-    public void setSolrConnProperties(SolrConnProperties solrConnProperties) {
-        this.solrConnProperties = solrConnProperties;
     }
 }

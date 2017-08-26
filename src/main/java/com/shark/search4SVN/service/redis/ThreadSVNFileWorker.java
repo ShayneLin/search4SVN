@@ -1,15 +1,15 @@
-package com.shark.search4SVN.service;
+package com.shark.search4SVN.service.redis;
 
 import com.alibaba.fastjson.JSONObject;
 import com.shark.search4SVN.pojo.SVNDocument;
+import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.util.Constants;
 import com.shark.search4SVN.util.JedisAdapter;
 import com.shark.search4SVN.util.Search4SVNContext;
-import com.shark.search4SVN.util.ThreadUtls;
+import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.log4j.Logger;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.tmatesoft.svn.core.SVNDirEntry;
 
@@ -19,15 +19,16 @@ import java.io.IOException;
 /**
  * Created by liuqinghua on 16-9-10.
  */
-public class SVNFileWorker implements Runnable {
+@Deprecated
+public class ThreadSVNFileWorker implements Runnable {
 
-    private static Logger logger = Logger.getLogger(SVNFileWorker.class);
+    private static Logger logger = Logger.getLogger(ThreadSVNFileWorker.class);
 
     private JedisAdapter jedisAdapter;
 
     private SVNService svnService = null;
 
-    public SVNFileWorker(SVNService svnService){
+    public ThreadSVNFileWorker(SVNService svnService){
         this.svnService = svnService;
         this.jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
     }
@@ -37,8 +38,8 @@ public class SVNFileWorker implements Runnable {
     public void run() {
 
 
-        while(!ScheduleService.isStop()) {
-            ThreadUtls.sleep(3000);
+        while(!ThreadScheduleService.isStop()) {
+            ThreadUtils.sleep(3000);
 
             try {
                 String url = jedisAdapter.spop(Constants.SVNFILE);

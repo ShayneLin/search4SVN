@@ -12,6 +12,12 @@ public class Search4SVNContext {
         applicationContext = context;
     }
 
+    public static Object getBean(String name){
+        if(applicationContext == null){
+            return null;
+        }
+        return applicationContext.getBean(name);
+    }
     public static Object getBean(Class clazz){
         if(applicationContext == null){
              return null;

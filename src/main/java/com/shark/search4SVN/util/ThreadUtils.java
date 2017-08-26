@@ -5,9 +5,9 @@ import org.apache.log4j.Logger;
 /**
  * Created by liuqinghua on 16-9-10.
  */
-public class ThreadUtls {
+public class ThreadUtils {
 
-    private static Logger logger = Logger.getLogger(ThreadUtls.class);
+    private static Logger logger = Logger.getLogger(ThreadUtils.class);
 
     public static void sleep(long num){
         try {

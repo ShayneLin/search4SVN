@@ -1,6 +1,8 @@
 package com.shark.search4SVN.controller;
 
-import com.shark.search4SVN.service.ScheduleService;
+import com.shark.search4SVN.service.disruptor.DisruptorScheduleService;
+import com.shark.search4SVN.service.disruptor.event.SVNEvent;
+import com.shark.search4SVN.service.redis.ThreadScheduleService;
 import com.shark.search4SVN.util.ThreadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +20,7 @@ public class SpiderController {
     private static final Logger logger = LoggerFactory.getLogger(SpiderController.class);
 
     @Autowired
-    private ThreadManager threadManager;
+    private DisruptorScheduleService disruptorScheduleService;
 
     @RequestMapping(path = {"/spider"}, method = {RequestMethod.GET})
     public String spider(){
@@ -36,13 +38,14 @@ public class SpiderController {
             throw new Exception("svnUrl, username, password： one of them is null ");
         }
 
-        logger.info("svnURl : " + svnUrl);
+        logger.info("检索 SVN 地址 svnURl : " + svnUrl);
 
 
-        ScheduleService scheduleService = new ScheduleService();
+      /*  ThreadScheduleService scheduleService = new ThreadScheduleService();
         scheduleService.init(svnUrl, username, password);
         scheduleService.setThreadManager(threadManager);
-        threadManager.submitTask("0", scheduleService);
+        threadManager.submitTask("0", scheduleService);*/
+        disruptorScheduleService.produceEvent(1, svnUrl,null);
 
         String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";
         //TODO 直接跳转到监控页面
@@ -57,7 +60,4 @@ public class SpiderController {
         return "error:" + e.getMessage();
     }
 
-    public void setThreadManager(ThreadManager threadManager) {
-        this.threadManager = threadManager;
-    }
 }

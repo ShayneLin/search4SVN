@@ -27,6 +27,7 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 * @date 2016年6月29日 下午2:39:13 
 * @version V1.0   
 */
+@Service("svnService")
 public class SVNService {
 	private static Logger logger = Logger.getLogger(SVNService.class);
 	
