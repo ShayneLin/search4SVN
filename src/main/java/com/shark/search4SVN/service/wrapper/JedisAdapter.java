@@ -1,16 +1,14 @@
-package com.shark.search4SVN.util;
+package com.shark.search4SVN.service.wrapper;
 
+import com.shark.search4SVN.util.JedisProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.*;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 

@@ -36,8 +36,8 @@ public class SearchController {
         if(!StringUtils.isEmpty(searchKey)){
             try {
                 List<SVNDocument> results = searchService.searchByKey(searchKey);
-
-                mv.addObject("searchResults", mv);
+                logger.info("检索结果: " + results.size());
+                mv.addObject("searchResults", results);
             }catch(Exception e){
                 logger.error(e.getMessage(), e);
             }

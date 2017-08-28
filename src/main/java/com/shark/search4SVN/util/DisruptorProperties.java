@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
  * Created by qinghualiu on 2017/8/26.
  */
 @Component
-@ConfigurationProperties(prefix = "disruptor.rambuffer", locations = "classpath:config/disruptor.rambuffer")
+@ConfigurationProperties(prefix = "disruptor.rambuffer", locations = "classpath:config/disruptor.properties")
 public class DisruptorProperties {
     private int size;
 

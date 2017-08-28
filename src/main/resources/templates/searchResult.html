@@ -11,8 +11,10 @@
             <td>SVN地址</td>
         </tr>
         <#list searchResults as searchResult>
-            <td>${searchResult.docName}</td>
-            <td>${searchResult.svnUrl}</td>
+            <tr>
+                <td>${searchResult.docName}</td>
+                <td>${searchResult.svnUrl}</td>
+            </tr>
         </#list>
     </table>
 </body>

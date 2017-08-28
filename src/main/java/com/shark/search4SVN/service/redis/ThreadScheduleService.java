@@ -1,7 +1,8 @@
 package com.shark.search4SVN.service.redis;
 
-import com.shark.search4SVN.service.SVNService;
+import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.util.*;
+import com.shark.search4SVN.service.wrapper.JedisAdapter;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ThreadScheduleService implements Runnable {
 
-    private SVNService svnService;
+    private SVNAdapter svnService;
     private String url;
 
     private ThreadManager threadManager;
@@ -20,7 +21,7 @@ public class ThreadScheduleService implements Runnable {
 
     public void init(String svnurl, String username, String pwd){
         this.url = svnurl;
-        svnService = new SVNService();
+        svnService = new SVNAdapter();
         svnService.init(username, pwd);
     }
 

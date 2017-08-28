@@ -16,7 +16,9 @@ public class HandledContent {
 
     public List<String> getHandled(){
         List<String> copyList = new ArrayList<String>();
-        Collections.copy(copyList, handled);
+        for(String url:handled){
+            copyList.add(url);
+        }
         return copyList;
     }
 }

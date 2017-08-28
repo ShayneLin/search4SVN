@@ -9,6 +9,7 @@ public class SVNEvent {
 
     private Integer type; //1: SVN 目录， 2：SVN文件， 3。Solr 文档
     private String url; //1和2时使用
+    private String svnKey; //用于在消息队列中流转时获取SVNAdapter的key md5(username+password)
     private SVNDocument document; //3时使用
 
     public Integer getType() {
@@ -33,5 +34,13 @@ public class SVNEvent {
 
     public void setDocument(SVNDocument document) {
         this.document = document;
+    }
+
+    public String getSvnKey() {
+        return svnKey;
+    }
+
+    public void setSvnKey(String svnKey) {
+        this.svnKey = svnKey;
     }
 }

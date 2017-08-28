@@ -1,6 +1,8 @@
 package com.shark.search4SVN.service.redis;
 
 import com.shark.search4SVN.util.*;
+import com.shark.search4SVN.service.wrapper.JedisAdapter;
+import com.shark.search4SVN.service.wrapper.SolrAdapter;
 import org.apache.log4j.Logger;
 
 /**

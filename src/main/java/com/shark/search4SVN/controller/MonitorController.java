@@ -1,8 +1,6 @@
 package com.shark.search4SVN.controller;
 
 import com.shark.search4SVN.service.disruptor.DisruptorScheduleService;
-import com.shark.search4SVN.util.Constants;
-import com.shark.search4SVN.util.JedisAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

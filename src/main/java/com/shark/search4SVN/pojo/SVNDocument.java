@@ -3,6 +3,7 @@ package com.shark.search4SVN.pojo;
 import java.util.Date;
 
 public class SVNDocument {
+
 	private String docName; //文件名称，唯一属性，下次更新索引的话，以名字为标准更新（存储且检索）
 	private String svnUrl; //SVN_URL 全路径，便于搜索（存储，但不检索）
 	private String content; //文档内容（推荐:检索但不存储)

@@ -1,9 +1,10 @@
 package com.shark.search4SVN.controller;
 
+import com.shark.search4SVN.service.redis.SVNService;
+import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.DisruptorScheduleService;
-import com.shark.search4SVN.service.disruptor.event.SVNEvent;
-import com.shark.search4SVN.service.redis.ThreadScheduleService;
-import com.shark.search4SVN.util.ThreadManager;
+import com.shark.search4SVN.util.MessageUtil;
+import com.shark.search4SVN.util.Search4SVNContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +42,24 @@ public class SpiderController {
         logger.info("检索 SVN 地址 svnURl : " + svnUrl);
 
 
+
       /*  ThreadScheduleService scheduleService = new ThreadScheduleService();
         scheduleService.init(svnUrl, username, password);
         scheduleService.setThreadManager(threadManager);
         threadManager.submitTask("0", scheduleService);*/
-        disruptorScheduleService.produceEvent(1, svnUrl,null);
+
+        SVNService svnService = (SVNService) Search4SVNContext.getBean("svnService");
+        String key = MessageUtil.md5(MessageUtil.concat(username, password));
+
+        SVNAdapter svnAdapter = new SVNAdapter(username,password);
+        svnService.setSVNAdapter(key, svnAdapter);
+
+        logger.info("svnService " + svnService.hashCode());
+        logger.info("svnService map size " + svnService.getSvnMap().size());
+
+        disruptorScheduleService.produceEvent(1, svnUrl,key, null);
+
+
 
         String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";
         //TODO 直接跳转到监控页面

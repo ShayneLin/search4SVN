@@ -1,8 +1,8 @@
 package com.shark.search4SVN.service.redis;
 
-import com.shark.search4SVN.service.SVNService;
+import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.util.Constants;
-import com.shark.search4SVN.util.JedisAdapter;
+import com.shark.search4SVN.service.wrapper.JedisAdapter;
 import com.shark.search4SVN.util.Search4SVNContext;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.log4j.Logger;
@@ -23,9 +23,9 @@ public class ThreadSVNDirWorker implements Runnable {
 
     private JedisAdapter jedisAdapter;
 
-    private SVNService svnService = null;
+    private SVNAdapter svnService = null;
 
-    public ThreadSVNDirWorker(SVNService svnService){
+    public ThreadSVNDirWorker(SVNAdapter svnService){
         this.svnService = svnService;
         this.jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
     }

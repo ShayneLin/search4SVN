@@ -1,4 +1,4 @@
-package com.shark.search4SVN.service;
+package com.shark.search4SVN.service.wrapper;
 
 
 import java.io.ByteArrayOutputStream;
@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -20,34 +19,27 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 
 
-/**查询svn目录  
-* @Title SvnTest.java  
-* @Description please descript this file
-* @author <a href= "mailto:" style="color:##E0E;">bin</a>
-* @date 2016年6月29日 下午2:39:13 
-* @version V1.0   
+/**
+ * 注意，一组 (用户名, 密码) 对应 一个 SVNAdapter
 */
-@Service("svnService")
-public class SVNService {
-	private static Logger logger = Logger.getLogger(SVNService.class);
+public class SVNAdapter {
+	private static Logger logger = Logger.getLogger(SVNAdapter.class);
 	
 	static {
 		DAVRepositoryFactory.setup();
 	}
 
-	private SVNClientManager manager;
-	private String userName;
-	private String passwd;
+	SVNClientManager  svnClientManager = null;
 	
-	public SVNService(){}
+	public SVNAdapter(){}
 
-	public SVNService(String userName, String passwd) {
+	public SVNAdapter(String userName, String passwd) {
 		init(userName, passwd);
 	}
 
 	public void init(String userName,String passwd){
 		DefaultSVNOptions options = new DefaultSVNOptions();
-		manager = SVNClientManager.newInstance(options,userName,passwd);
+		svnClientManager = SVNClientManager.newInstance(options,userName,passwd);
 	}
 
 	
@@ -135,7 +127,7 @@ public class SVNService {
 	private SVNRepository createRepository(String url){
 		
 		try {
-			return manager.createRepository(SVNURL.parseURIEncoded(url), true);
+			return svnClientManager.createRepository(SVNURL.parseURIEncoded(url), true);
 		} catch (SVNException e) {
 			logger.error("createRepository error",e);
 		}
@@ -160,18 +152,8 @@ public class SVNService {
 		return 0;
 	}
 
+	public void clear(){
 
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-	public String getPasswd() {
-		return passwd;
-	}
-	public void setPasswd(String passwd) {
-		this.passwd = passwd;
 	}
 }
 
