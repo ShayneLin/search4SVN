@@ -5,9 +5,11 @@ import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.service.redis.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.event.SVNEvent;
+import com.shark.search4SVN.util.ThreadManager;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.tmatesoft.svn.core.SVNDirEntry;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 /**
  * Created by qinghualiu on 2017/5/21.
@@ -49,25 +52,37 @@ public class DisruptorSVNFileWorker implements EventHandler<SVNEvent> {
                 byte[] bytes = (byte[]) objects[1];
 
                 Tika tika = new Tika();
+                ThreadManager.getInstance().submitTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        String mimeType = tika.detect(bytes);
 
-                String mimeType = tika.detect(bytes);
+                        String text = null;
+                        try {
+                            text = tika.parseToString(new ByteArrayInputStream(bytes));
+                        } catch (IOException e) {
+                            logger.error(e.getMessage(), e);
+                        } catch (TikaException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                        text = StringUtils.trimWhitespace(text);
 
-                String text = tika.parseToString(new ByteArrayInputStream(bytes));
-                text = StringUtils.trimWhitespace(text);
+                        String docName = FilenameUtils.getName(url);
 
-                String docName = FilenameUtils.getName(url);
+                        SVNDocument document = new SVNDocument();
+                        document.setDocName(docName);
+                        document.setRevision(String.valueOf(entry.getRevision()));
+                        document.setSvnUrl(url);
+                        document.setLastModifyAuthor(entry.getAuthor());
+                        document.setLastModifyTime(entry.getDate());
+                        document.setContent(text);
+                        document.setMimeType(mimeType);
 
-                SVNDocument document = new SVNDocument();
-                document.setDocName(docName);
-                document.setRevision(String.valueOf(entry.getRevision()));
-                document.setSvnUrl(url);
-                document.setLastModifyAuthor(entry.getAuthor());
-                document.setLastModifyTime(entry.getDate());
-                document.setContent(text);
-                document.setMimeType(mimeType);
+                        disruptorScheduleService.produceEvent(3, null, null, document);
+                        disruptorScheduleService.addHandled(url);
+                    }
+                });
 
-                disruptorScheduleService.produceEvent(3, null, null, document);
-                disruptorScheduleService.addHandled(url);
             }
         }catch(Exception e){
             logger.error(e.getMessage(), e);

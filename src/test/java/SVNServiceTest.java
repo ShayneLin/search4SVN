@@ -1,6 +1,6 @@
 import java.util.List;
 
-import com.shark.search4SVN.service.SVNService;
+import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import org.apache.tika.Tika;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -16,7 +16,7 @@ public class SVNServiceTest {
          String password = "netcasvnlqh";
          String url = "http://192.168.0.11:8081/svn/netca/产品/业务运营管理平台/src/trunk/PKIDemo/readme.txt";
          //String url = "http://192.168.0.11:8081/svn/netca/产品/业务运营管理平台/3.设计";
- 		 SVNService svn = new SVNService(username, password);
+ 		 SVNAdapter svn = new SVNAdapter(username, password);
  		 Object[] bytes = svn.checkoutFile(url);
  		 System.out.println(bytes.length);
  		/* String xml = svn.checkoutFileToString(url);
@@ -29,7 +29,7 @@ public class SVNServiceTest {
     
     
     
-    public static void list(SVNService svn, String url){
+    public static void list(SVNAdapter svn, String url){
     	 if(url == null || "".endsWith(url.trim())){
     		 return;
     	 }

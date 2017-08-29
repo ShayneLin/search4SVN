@@ -4,33 +4,66 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Created by liuqinghua on 16-9-10.
  * 所有的线程交给其来处理
  */
-@Deprecated
-@Component
-public class ThreadManager implements InitializingBean {
 
-    private static Logger logger = Logger.getLogger(ThreadManager.class);
+public class ThreadManager {
 
-    private ExecutorService fixedThreadPool;
+    private ThreadManager(){}
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        //根据 当前机器的配置来决定 线程的数量
-        int threadNum = Math.max(2,Runtime.getRuntime().availableProcessors());
-        logger.info("ThreadManager  num " + threadNum);
-        fixedThreadPool = Executors.newFixedThreadPool(threadNum);
+    //内部类
+    private static class ThreadManagerHolder{
+        private static ThreadManager instance = new ThreadManager();
     }
+
+    public static ThreadManager getInstance() {
+        return ThreadManagerHolder.instance;
+    }
+
+    private final ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
+            1,
+            //最大线程池大小为1（有限数值）：
+            Runtime.getRuntime().availableProcessors() * 2,
+            60, TimeUnit.SECONDS,
+            //工作队列为SynchronousQueue：
+            new SynchronousQueue<Runnable>(),
+            //线程池饱和处理策略为CallerRunsPolicy：
+            new ReEnqueueRejectedExecutionHandler());
+
 
     /**
      * 提交任务
      */
-    public void submitTask(String uuid, Runnable task){
-        fixedThreadPool.execute(task);
+    public void submitTask(Runnable task){
+        threadPool.submit(task);
     }
+}
+
+/**
+ * 该线程池饱和处理策略支持将提交失败的任务重新放入线程池工作队列。
+ *
+ * @author Viscent Huang
+ *
+ */
+class ReEnqueueRejectedExecutionHandler implements
+        RejectedExecutionHandler {
+
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+        if (executor.isShutdown()) {
+            return;
+        }
+
+        try {
+            executor.getQueue().put(r);
+        } catch (InterruptedException e) {
+            ;
+        }
+
+    }
+
 }
