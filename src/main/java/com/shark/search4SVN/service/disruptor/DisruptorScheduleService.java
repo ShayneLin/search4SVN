@@ -49,21 +49,16 @@ public class DisruptorScheduleService implements InitializingBean, ApplicationCo
                 Executors.defaultThreadFactory());
 
         DisruptorSolrWorker disruptorSolrWorker = new DisruptorSolrWorker();
-        DisruptorSVNDirWorker disruptorSVNDirWorker = new DisruptorSVNDirWorker();
-        DisruptorSVNFileWorker disruptorSVNFileWorker = new DisruptorSVNFileWorker();
+        DisruptorSVNWorker disruptorSVNWorker = new DisruptorSVNWorker();
 
         SVNService svnService = (SVNService)applicationContext.getBean("svnService");
         SolrAdapter solrAdapter = (SolrAdapter) applicationContext.getBean("solrAdapter");
 
-        disruptorSVNDirWorker.setSvnService(svnService);
-        disruptorSVNDirWorker.setDisruptorScheduleService(this);
-        disruptorSVNFileWorker.setDisruptorScheduleService(this);
-        disruptorSVNFileWorker.setSvnService(svnService);
+        disruptorSVNWorker.setSvnService(svnService);
+        disruptorSVNWorker.setDisruptorScheduleService(this);
         disruptorSolrWorker.setSolrAdapter(solrAdapter);
 
-        disruptor.handleEventsWith(disruptorSolrWorker,
-                disruptorSVNDirWorker,
-                disruptorSVNFileWorker);
+        disruptor.handleEventsWith(disruptorSVNWorker, disruptorSolrWorker);
 
         this.handledContent = new HandledContent();
         this.ringBuffer = disruptor.getRingBuffer();

@@ -33,9 +33,9 @@ public class ThreadScheduleService implements Runnable {
         JedisAdapter jedisAdapter = (JedisAdapter) Search4SVNContext.getBean(JedisAdapter.class);
         jedisAdapter.sadd(Constants.SVNDIRKEY, url);
 
-        threadManager.submitTask("1", svnDirWorker);
-        threadManager.submitTask("2", svnFileWorker);
-        threadManager.submitTask("3", solrWorker);
+        threadManager.submitTask(svnDirWorker);
+        threadManager.submitTask(svnFileWorker);
+        threadManager.submitTask(solrWorker);
     }
 
 

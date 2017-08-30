@@ -18,8 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by liuqinghua on 16-9-13.
@@ -30,6 +32,11 @@ public class SolrAdapter implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(SolrAdapter.class);
     private SolrClient solrClient;
 
+    private BlockingQueue<SVNDocument> blockingQueue = new LinkedBlockingQueue<SVNDocument>();
+
+
+    private volatile AtomicLong count = new AtomicLong();
+
     @Autowired
     private SolrConnProperties solrConnProperties;
 
@@ -38,24 +45,52 @@ public class SolrAdapter implements InitializingBean {
         String url = solrConnProperties.getUrl();
 
         solrClient = new HttpSolrClient.Builder(url).build();
+
+        //设置定时器，定时 提交文档到 solr
+        Timer timer = new Timer();
+        long delay = 0;
+        long intevalPeriod = 5 * 1000;
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SolrInputDocument solrDoc = null;
+                Iterator<SVNDocument> it =  blockingQueue.iterator();
+                while(it.hasNext()){
+                    try {
+                        SVNDocument document = it.next();
+                        logger.info("提交文档 " + document.toString());
+                        solrDoc = new SolrInputDocument();
+
+                        solrDoc.addField("id", MessageUtil.md5(document.getDocName()));
+                        solrDoc.addField("docName", document.getDocName());
+                        solrDoc.addField("revision", document.getRevision());
+                        solrDoc.addField("author", document.getLastModifyAuthor());
+                        solrDoc.addField("lastModifyTime", document.getLastModifyTime());
+                        solrDoc.addField("svnUrl", document.getSvnUrl());
+                        solrDoc.addField("content", document.getContent());
+
+                        solrClient.add(solrDoc);
+                    }catch(Exception e){
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+
+                try {
+                    solrClient.commit();
+                } catch (SolrServerException e) {
+                    logger.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+
+            }
+        }, delay, intevalPeriod);
     }
 
     public void addSolrDocument(SVNDocument document){
          SolrInputDocument solrDoc = null;
          try{
-             logger.info("提交文档 " + document.toString());
-             solrDoc = new SolrInputDocument();
-
-             solrDoc.addField("id", MessageUtil.md5(document.getDocName()));
-             solrDoc.addField("docName", document.getDocName());
-             solrDoc.addField("revision", document.getRevision());
-             solrDoc.addField("author", document.getLastModifyAuthor());
-             solrDoc.addField("lastModifyTime", document.getLastModifyTime());
-             solrDoc.addField("svnUrl", document.getSvnUrl());
-             solrDoc.addField("content", document.getContent());
-
-             solrClient.add(solrDoc);
-             solrClient.commit();
+             blockingQueue.put(document);
          }catch(Exception e){
              logger.error(e.getMessage(), e);
          }
@@ -66,7 +101,7 @@ public class SolrAdapter implements InitializingBean {
 
         List<SVNDocument> docs = new ArrayList<SVNDocument>();
 
-        SolrQuery query = new SolrQuery("_text_:" + keyword);
+        SolrQuery query = new SolrQuery("keywords:" + keyword);
         query.setFields("revision","svnUrl","docName", "lastModifyTime", "author");
         //query.setSort("lastUpdateTime", ORDER.desc);
         query.setStart(0);

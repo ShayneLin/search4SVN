@@ -8,6 +8,7 @@ import com.shark.search4SVN.service.disruptor.event.SVNEvent;
 import com.shark.search4SVN.util.ThreadManager;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.cxf.annotations.DataBinding;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.io.IOException;
 /**
  * Created by qinghualiu on 2017/5/21.
  */
+@Deprecated
 public class DisruptorSVNFileWorker implements EventHandler<SVNEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(DisruptorSVNFileWorker.class);
