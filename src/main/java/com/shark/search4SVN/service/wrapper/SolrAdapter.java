@@ -32,6 +32,7 @@ public class SolrAdapter implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(SolrAdapter.class);
     private SolrClient solrClient;
 
+    private volatile boolean commiting2Solr = false;
     private BlockingQueue<SVNDocument> blockingQueue = new LinkedBlockingQueue<SVNDocument>();
 
 
@@ -53,34 +54,42 @@ public class SolrAdapter implements InitializingBean {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                SolrInputDocument solrDoc = null;
-                Iterator<SVNDocument> it =  blockingQueue.iterator();
-                while(it.hasNext()){
+                try {
+                    commiting2Solr = true;
+
+                    SolrInputDocument solrDoc = null;
+                    Iterator<SVNDocument> it = blockingQueue.iterator();
+                    while (it.hasNext()) {
+                        try {
+                            SVNDocument document = it.next();
+                            logger.info("提交文档 " + document.getDocName());
+                            solrDoc = new SolrInputDocument();
+
+                            solrDoc.addField("id", MessageUtil.md5(document.getDocName()));
+                            solrDoc.addField("docName", document.getDocName());
+                            solrDoc.addField("revision", document.getRevision());
+                            solrDoc.addField("author", document.getLastModifyAuthor());
+                            solrDoc.addField("lastModifyTime", document.getLastModifyTime());
+                            solrDoc.addField("svnUrl", document.getSvnUrl());
+                            solrDoc.addField("content", document.getContent());
+
+                            solrClient.add(solrDoc);
+
+                            it.remove();
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+
                     try {
-                        SVNDocument document = it.next();
-                        logger.info("提交文档 " + document.toString());
-                        solrDoc = new SolrInputDocument();
-
-                        solrDoc.addField("id", MessageUtil.md5(document.getDocName()));
-                        solrDoc.addField("docName", document.getDocName());
-                        solrDoc.addField("revision", document.getRevision());
-                        solrDoc.addField("author", document.getLastModifyAuthor());
-                        solrDoc.addField("lastModifyTime", document.getLastModifyTime());
-                        solrDoc.addField("svnUrl", document.getSvnUrl());
-                        solrDoc.addField("content", document.getContent());
-
-                        solrClient.add(solrDoc);
-                    }catch(Exception e){
+                        solrClient.commit();
+                    } catch (SolrServerException e) {
+                        logger.error(e.getMessage(), e);
+                    } catch (IOException e) {
                         logger.error(e.getMessage(), e);
                     }
-                }
-
-                try {
-                    solrClient.commit();
-                } catch (SolrServerException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+                }finally {
+                    commiting2Solr = false;
                 }
 
             }
@@ -90,11 +99,26 @@ public class SolrAdapter implements InitializingBean {
     public void addSolrDocument(SVNDocument document){
          SolrInputDocument solrDoc = null;
          try{
+             while(commiting2Solr == true){
+                 logger.debug("文档正在上传 solr ");
+             }
              blockingQueue.put(document);
          }catch(Exception e){
              logger.error(e.getMessage(), e);
          }
 
+    }
+
+    public void optimize(){
+        if(commiting2Solr != false){
+            try {
+                solrClient.optimize();
+            } catch (SolrServerException e) {
+                logger.error(e.getMessage(), e);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
     }
 
     public List<SVNDocument> searchSolrDocment(String keyword) throws IOException, SolrServerException {

@@ -3,6 +3,7 @@ package com.shark.search4SVN.controller;
 import com.shark.search4SVN.service.redis.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.DisruptorScheduleService;
+import com.shark.search4SVN.service.wrapper.SolrAdapter;
 import com.shark.search4SVN.util.MessageUtil;
 import com.shark.search4SVN.util.Search4SVNContext;
 import org.slf4j.Logger;
@@ -23,9 +24,21 @@ public class SpiderController {
     @Autowired
     private DisruptorScheduleService disruptorScheduleService;
 
+    @Autowired
+    private SolrAdapter solrAdapter;
+
     @RequestMapping(path = {"/spider"}, method = {RequestMethod.GET})
     public String spider(){
         return "spider";
+    }
+
+    @RequestMapping(path = {"/optimize"}, method={RequestMethod.GET})
+    @ResponseBody
+    public String optimizeSolr(){
+        solrAdapter.optimize();
+        String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";
+        //TODO 直接跳转到监控页面
+        return responseBody;
     }
 
     @RequestMapping(path = {"/stepSpider"}, method={RequestMethod.POST})

@@ -23,12 +23,13 @@ public class DisruptorSolrWorker implements EventHandler<SVNEvent> {
         try {
             if (event.getType() == 3) {
                 ThreadUtils.sleep(500);
-                ThreadManager.getInstance().submitTask(new Runnable() {
+                solrAdapter.addSolrDocument(event.getDocument());
+              /*  ThreadManager.getInstance().submitTask(new Runnable() {
                     @Override
                     public void run() {
                         solrAdapter.addSolrDocument(event.getDocument());
                     }
-                });
+                });*/
             }
         }catch (Exception e){
             logger.error(e.getMessage(), e);
