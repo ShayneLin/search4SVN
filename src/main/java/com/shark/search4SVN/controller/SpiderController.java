@@ -1,6 +1,6 @@
 package com.shark.search4SVN.controller;
 
-import com.shark.search4SVN.service.redis.SVNService;
+import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.DisruptorScheduleService;
 import com.shark.search4SVN.service.wrapper.SolrAdapter;

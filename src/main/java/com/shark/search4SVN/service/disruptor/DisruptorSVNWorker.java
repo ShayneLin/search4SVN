@@ -2,9 +2,11 @@ package com.shark.search4SVN.service.disruptor;
 
 import com.lmax.disruptor.EventHandler;
 import com.shark.search4SVN.pojo.SVNDocument;
-import com.shark.search4SVN.service.redis.SVNService;
+import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.event.SVNEvent;
+import com.shark.search4SVN.util.EventConstants;
+import com.shark.search4SVN.util.FileTypeConstants;
 import com.shark.search4SVN.util.ThreadManager;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -33,7 +35,7 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
     @Override
     public void onEvent(SVNEvent event, long sequence, boolean endOfBatch) throws Exception {
         try {
-            if (event.getType() == 1) {
+            if (event.getType() == EventConstants.SVNEVENT) {
                 ThreadUtils.sleep(500);
                 String url = event.getUrl();
 
@@ -41,22 +43,31 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
 
                 logger.info("处理 url " + url);
                 SVNAdapter svnAdapter = svnService.getSVNAdapter(key);
-                List<SVNDirEntry> entrys = svnAdapter.listFolder(url);
 
-                if (entrys != null) {
-                    for (SVNDirEntry entry : entrys) {
-                        if (SVNNodeKind.DIR.equals(entry.getKind())) {
+                int result = svnAdapter.checkPath(url);
+                if(result == FileTypeConstants.DIRTYPE) {
+                    List<SVNDirEntry> entrys = svnAdapter.listFolder(url);
 
-                            String newUrl = url + "/" + entry.getRelativePath();
-                            //disruptor publish new event with newUrl type 1;
-                            disruptorScheduleService.produceEvent(1, newUrl, key, null);
-                        } else {
+                    if (entrys != null) {
+                        for (SVNDirEntry entry : entrys) {
+                            if (SVNNodeKind.DIR.equals(entry.getKind())) {
 
-                            String newUrl = url + "/" + entry.getRelativePath();
-                            //disruptor publish new event with newUrl type 2;
-                            disruptorScheduleService.produceEvent(2, newUrl, key, null);
+                                String newUrl = url + "/" + entry.getRelativePath();
+                                //disruptor publish new event with newUrl type 1;
+                                disruptorScheduleService.produceEvent(EventConstants.SVNEVENT, newUrl, key, null);
+                            } else {
+
+                               /* String newUrl = url + "/" + entry.getRelativePath();
+                                //disruptor publish new event with newUrl type 2;
+                                disruptorScheduleService.produceEvent(2, newUrl, key, null);*/
+                                parseDocContent(svnAdapter, url);
+
+                            }
                         }
                     }
+                }else if(result == FileTypeConstants.FILETYPE){
+                    //disruptorScheduleService.produceEvent(2, url, key, null);
+                    parseDocContent(svnAdapter, url);
                 }
                 disruptorScheduleService.addHandled(url);
             }
@@ -105,8 +116,7 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     document.setContent(text);
                     document.setMimeType(mimeType);
 
-                    disruptorScheduleService.produceEvent(3, null, null, document);
-                    disruptorScheduleService.addHandled(url);
+                    disruptorScheduleService.produceEvent(EventConstants.SOLREVENT, null, null, document);
 
                 }catch (Exception e){
                     logger.error(e.getMessage(), e);

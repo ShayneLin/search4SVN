@@ -3,6 +3,7 @@ package com.shark.search4SVN.service.disruptor;
 import com.lmax.disruptor.EventHandler;
 import com.shark.search4SVN.service.disruptor.event.SVNEvent;
 import com.shark.search4SVN.service.wrapper.SolrAdapter;
+import com.shark.search4SVN.util.EventConstants;
 import com.shark.search4SVN.util.ThreadManager;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.slf4j.Logger;
@@ -21,15 +22,9 @@ public class DisruptorSolrWorker implements EventHandler<SVNEvent> {
     @Override
     public void onEvent(SVNEvent event, long sequence, boolean endOfBatch) throws Exception {
         try {
-            if (event.getType() == 3) {
+            if (event.getType() == EventConstants.SOLREVENT) {
                 ThreadUtils.sleep(500);
                 solrAdapter.addSolrDocument(event.getDocument());
-              /*  ThreadManager.getInstance().submitTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        solrAdapter.addSolrDocument(event.getDocument());
-                    }
-                });*/
             }
         }catch (Exception e){
             logger.error(e.getMessage(), e);

@@ -1,4 +1,4 @@
-package com.shark.search4SVN.service.redis;
+package com.shark.search4SVN.service;
 
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.util.MessageUtil;

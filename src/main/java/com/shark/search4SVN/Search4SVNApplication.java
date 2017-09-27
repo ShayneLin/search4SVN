@@ -9,7 +9,7 @@ import static com.shark.search4SVN.util.Search4SVNContext.*;
 
 
 @SpringBootApplication
-@EnableConfigurationProperties({JedisProperties.class,  SolrConnProperties.class})
+@EnableConfigurationProperties({SolrConnProperties.class})
 public class Search4SVNApplication {
 
     public static void main(String[] args) {

@@ -3,6 +3,7 @@ package com.shark.search4SVN.service.wrapper;
 import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.util.MessageUtil;
 import com.shark.search4SVN.util.SolrConnProperties;
+import com.shark.search4SVN.util.ThreadManager;
 import com.shark.search4SVN.util.ThreadUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,7 +35,8 @@ public class SolrAdapter implements InitializingBean {
     private SolrClient solrClient;
 
     private volatile boolean commiting2Solr = false;
-    private BlockingQueue<SVNDocument> blockingQueue = new LinkedBlockingQueue<SVNDocument>();
+    //private BlockingQueue<SVNDocument> blockingQueue = new LinkedBlockingQueue<SVNDocument>();
+    private List<SVNDocument> submit2Solr = Collections.synchronizedList(new ArrayList<>());
 
 
     private volatile AtomicLong count = new AtomicLong();
@@ -50,18 +53,26 @@ public class SolrAdapter implements InitializingBean {
         //设置定时器，定时 提交文档到 solr
         Timer timer = new Timer();
         long delay = 0;
-        long intevalPeriod = 5 * 1000;
+        long intevalPeriod = 5 * 100;
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
-                    commiting2Solr = true;
-
+                    boolean hasSubmit = false;
                     SolrInputDocument solrDoc = null;
-                    Iterator<SVNDocument> it = blockingQueue.iterator();
-                    while (it.hasNext()) {
+                    List<SVNDocument> subDocs = new ArrayList<SVNDocument>();
+
+                    commiting2Solr = true;
+                    for(SVNDocument svnDocument:submit2Solr){
+                        subDocs.add(svnDocument);
+                    }
+                    submit2Solr.clear();
+                    commiting2Solr = false;
+
+                    for(SVNDocument document:subDocs){
+                        hasSubmit = true;
                         try {
-                            SVNDocument document = it.next();
                             logger.info("提交文档 " + document.getDocName());
                             solrDoc = new SolrInputDocument();
 
@@ -74,19 +85,19 @@ public class SolrAdapter implements InitializingBean {
                             solrDoc.addField("content", document.getContent());
 
                             solrClient.add(solrDoc);
-
-                            it.remove();
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                         }
                     }
 
-                    try {
-                        solrClient.commit();
-                    } catch (SolrServerException e) {
-                        logger.error(e.getMessage(), e);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
+                    if(hasSubmit) {
+                        try {
+                            solrClient.commit();
+                        } catch (SolrServerException e) {
+                            logger.error(e.getMessage(), e);
+                        } catch (IOException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                     }
                 }finally {
                     commiting2Solr = false;
@@ -97,12 +108,12 @@ public class SolrAdapter implements InitializingBean {
     }
 
     public void addSolrDocument(SVNDocument document){
-         SolrInputDocument solrDoc = null;
          try{
              while(commiting2Solr == true){
                  logger.debug("文档正在上传 solr ");
+                 ThreadUtils.sleep(2 * 1000);
              }
-             blockingQueue.put(document);
+             submit2Solr.add(document);
          }catch(Exception e){
              logger.error(e.getMessage(), e);
          }

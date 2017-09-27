@@ -6,9 +6,10 @@ import com.shark.search4SVN.pojo.HandledContent;
 import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.service.disruptor.event.SVNEvent;
 import com.shark.search4SVN.service.disruptor.event.SVNEventFactory;
-import com.shark.search4SVN.service.redis.SVNService;
+import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.util.DisruptorProperties;
 import com.shark.search4SVN.service.wrapper.SolrAdapter;
+import com.shark.search4SVN.util.EventConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -71,10 +72,10 @@ public class DisruptorScheduleService implements InitializingBean, ApplicationCo
         try {
             SVNEvent event = ringBuffer.get(sequence); // Get the entry in the Disruptor
             event.setType(type);
-            if(type == 1 || type == 2){
+            if(type == EventConstants.SVNEVENT){
                 event.setUrl(url);
                 event.setSvnKey(key);
-            }else if(type == 3){
+            }else if(type == EventConstants.SOLREVENT){
                 event.setDocument(svnDocument);
             }
         } finally {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.shark.search4SVN.util.FileTypeConstants;
 import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
@@ -134,17 +135,23 @@ public class SVNAdapter {
 		return null;
 	}
 	
-	/**检查路径是否存在
+	/**检查是文件还是路径
 	 * @param url
-	 * @return 1：存在    0：不存在   -1：出错
+	 * @return 2：文件 1：目录    0：不存在   -1：出错
 	 */
 	public int checkPath(String url){
 		SVNRepository repository = createRepository(url);
 		SVNNodeKind nodeKind;
 		try {
 			nodeKind = repository.checkPath("", -1);
-			boolean result = nodeKind == SVNNodeKind.NONE ? false : true;
-			if(result) return 1;
+			if (nodeKind == SVNNodeKind.NONE){
+				return 0;
+			}else if(nodeKind == SVNNodeKind.DIR){
+				return FileTypeConstants.DIRTYPE;
+			}else if(nodeKind == SVNNodeKind.FILE){
+				return FileTypeConstants.FILETYPE;
+			}
+
 		} catch (SVNException e) {
 			logger.error("checkPath error",e);
 			return -1;
