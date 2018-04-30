@@ -160,7 +160,7 @@ public class SVNAdapter {
 	}
 
 	public void clear(){
-
+		if(svnClientManager != null) svnClientManager.dispose();
 	}
 }
 

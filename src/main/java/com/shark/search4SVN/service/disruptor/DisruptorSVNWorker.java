@@ -36,7 +36,7 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
     public void onEvent(SVNEvent event, long sequence, boolean endOfBatch) throws Exception {
         try {
             if (event.getType() == EventConstants.SVNEVENT) {
-                ThreadUtils.sleep(500);
+                ThreadUtils.sleep(100);
                 String url = event.getUrl();
 
                 String key = event.getSvnKey();

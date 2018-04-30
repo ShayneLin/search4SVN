@@ -27,19 +27,14 @@ public class SpiderController {
     @Autowired
     private SolrAdapter solrAdapter;
 
+    @Autowired
+    private SVNService svnService;
+
     @RequestMapping(path = {"/spider"}, method = {RequestMethod.GET})
     public String spider(){
         return "spider";
     }
 
-    @RequestMapping(path = {"/optimize"}, method={RequestMethod.GET})
-    @ResponseBody
-    public String optimizeSolr(){
-        solrAdapter.optimize();
-        String responseBody = "启动爬虫成功 <a href='index'>返回首页</a>";
-        //TODO 直接跳转到监控页面
-        return responseBody;
-    }
 
     @RequestMapping(path = {"/stepSpider"}, method={RequestMethod.POST})
     @ResponseBody
@@ -54,20 +49,14 @@ public class SpiderController {
 
         logger.info("检索 SVN 地址 svnURl : " + svnUrl);
 
-
-
-      /*  ThreadScheduleService scheduleService = new ThreadScheduleService();
-        scheduleService.init(svnUrl, username, password);
-        scheduleService.setThreadManager(threadManager);
-        threadManager.submitTask("0", scheduleService);*/
-
-        SVNService svnService = (SVNService) Search4SVNContext.getBean("svnService");
         String key = MessageUtil.md5(MessageUtil.concat(username, password));
 
-        SVNAdapter svnAdapter = new SVNAdapter(username,password);
-        svnService.setSVNAdapter(key, svnAdapter);
+        SVNAdapter svnAdapter = svnService.getSVNAdapter(key);
+        if(svnAdapter == null) {
+            svnAdapter = new SVNAdapter(username, password);
+            svnService.setSVNAdapter(key, svnAdapter);
+        }
 
-        logger.info("svnService " + svnService.hashCode());
         logger.info("svnService map size " + svnService.getSvnMap().size());
 
         disruptorScheduleService.produceEvent(1, svnUrl,key, null);

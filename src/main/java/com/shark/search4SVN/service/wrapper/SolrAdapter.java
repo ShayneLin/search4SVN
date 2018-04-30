@@ -35,11 +35,8 @@ public class SolrAdapter implements InitializingBean {
     private SolrClient solrClient;
 
     private volatile boolean commiting2Solr = false;
-    //private BlockingQueue<SVNDocument> blockingQueue = new LinkedBlockingQueue<SVNDocument>();
-    private List<SVNDocument> submit2Solr = Collections.synchronizedList(new ArrayList<>());
-
-
-    private volatile AtomicLong count = new AtomicLong();
+    private Object commitingLock = new Object();
+    private List<SVNDocument> submit2Solr = new ArrayList<SVNDocument>();
 
     @Autowired
     private SolrConnProperties solrConnProperties;
@@ -55,15 +52,17 @@ public class SolrAdapter implements InitializingBean {
         long delay = 0;
         long intevalPeriod = 5 * 100;
 
+        //定时提交任务
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
+                    commiting2Solr = true;
+
                     boolean hasSubmit = false;
                     SolrInputDocument solrDoc = null;
                     List<SVNDocument> subDocs = new ArrayList<SVNDocument>();
 
-                    commiting2Solr = true;
                     for(SVNDocument svnDocument:submit2Solr){
                         subDocs.add(svnDocument);
                     }
@@ -101,17 +100,25 @@ public class SolrAdapter implements InitializingBean {
                     }
                 }finally {
                     commiting2Solr = false;
+                    synchronized (commitingLock){
+                        commitingLock.notify();
+                    }
                 }
 
             }
         }, delay, intevalPeriod);
     }
 
+    /**
+     * 该方法的调用是从 消息阻塞队列里获取 doc 提交，本身已经是 一个线程异步处理，所以无需同步处理
+     * @param document
+     */
     public void addSolrDocument(SVNDocument document){
          try{
              while(commiting2Solr == true){
-                 logger.debug("文档正在上传 solr ");
-                 ThreadUtils.sleep(2 * 1000);
+                 synchronized (commitingLock){
+                     commitingLock.wait(500);
+                 }
              }
              submit2Solr.add(document);
          }catch(Exception e){
@@ -120,6 +127,10 @@ public class SolrAdapter implements InitializingBean {
 
     }
 
+    /**
+     * 方法废弃，根据 solr官方说法，尽量不要手动 optimize
+     */
+    @Deprecated
     public void optimize(){
         if(commiting2Solr != false){
             try {

@@ -21,10 +21,10 @@ public class SVNService {
      */
     private Map<String, SVNAdapter> svnMap = new ConcurrentHashMap<String, SVNAdapter>();
 
-    public void setSVNAdapter(String username, String password, SVNAdapter svnAdapter) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+/*    public void setSVNAdapter(String username, String password, SVNAdapter svnAdapter) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         String key = MessageUtil.md5(MessageUtil.concat(username, password));
         this.setSVNAdapter(key, svnAdapter);
-    }
+    }*/
 
     public void setSVNAdapter(String key, SVNAdapter svnAdapter){
         if(svnMap.containsKey(key)) return;

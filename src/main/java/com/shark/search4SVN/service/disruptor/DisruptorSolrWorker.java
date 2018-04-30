@@ -23,7 +23,7 @@ public class DisruptorSolrWorker implements EventHandler<SVNEvent> {
     public void onEvent(SVNEvent event, long sequence, boolean endOfBatch) throws Exception {
         try {
             if (event.getType() == EventConstants.SOLREVENT) {
-                ThreadUtils.sleep(500);
+                ThreadUtils.sleep(100);
                 solrAdapter.addSolrDocument(event.getDocument());
             }
         }catch (Exception e){

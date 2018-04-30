@@ -22,8 +22,4 @@ public class SearchService {
         List<SVNDocument> docs = solrAdapter.searchSolrDocment(searchKey);
         return docs;
     }
-
-    public void setSolrAdapter(SolrAdapter solrAdapter) {
-        this.solrAdapter = solrAdapter;
-    }
 }
