@@ -106,6 +106,9 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     text = StringUtils.trimWhitespace(text);
 
                     String docName = FilenameUtils.getName(url);
+                    if(!DisruptorSVNWorker.this.accept(docName, mimeType)){//只接受指定的文件格式的文件，其他的不予理会
+                        return;
+                    }
 
                     SVNDocument document = new SVNDocument();
                     document.setDocName(docName);
@@ -126,11 +129,37 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
 
     }
 
+
     public void setSvnService(SVNService svnService) {
         this.svnService = svnService;
     }
 
     public void setDisruptorScheduleService(DisruptorScheduleService disruptorScheduleService) {
         this.disruptorScheduleService = disruptorScheduleService;
+    }
+
+    /**
+     * 判断是否分析从SVN上获取的文件内容
+     * TODO 当前先根据 后缀名来处理，今后考虑从mimeType上判断
+     * @param docName
+     * @param mimeType
+     * @return true 接受文件，false，不接受
+     */
+    private boolean accept(String docName, String mimeType) {
+        String extName = FilenameUtils.getExtension(docName);
+        if(!StringUtils.isEmpty(extName)){
+            if("txt".equalsIgnoreCase(extName)
+               && "doc".equalsIgnoreCase(extName)
+                    && "docx".equalsIgnoreCase(extName)
+                    && "ppt".equalsIgnoreCase(extName)
+                    && "xls".equalsIgnoreCase(extName)
+                    && "xlsx".equalsIgnoreCase(extName)
+                    && "java".equalsIgnoreCase(extName)
+                    && "sql".equalsIgnoreCase(extName)){
+                return true;
+            }
+        }
+
+        return false;
     }
 }
