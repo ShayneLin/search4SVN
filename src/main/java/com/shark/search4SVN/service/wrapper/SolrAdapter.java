@@ -50,7 +50,7 @@ public class SolrAdapter implements InitializingBean {
         //设置定时器，定时 提交文档到 solr
         Timer timer = new Timer();
         long delay = 0;
-        long intevalPeriod = 5 * 100;
+        long intevalPeriod = 2 * 1000;
 
         //定时提交任务
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -76,12 +76,12 @@ public class SolrAdapter implements InitializingBean {
                             solrDoc = new SolrInputDocument();
 
                             solrDoc.addField("id", MessageUtil.md5(document.getDocName()));
-                            solrDoc.addField("docName", document.getDocName());
+                            solrDoc.addField("filename", document.getDocName());
                             solrDoc.addField("revision", document.getRevision());
-                            solrDoc.addField("author", document.getLastModifyAuthor());
+                            solrDoc.addField("lastauthor", document.getLastModifyAuthor());
                             solrDoc.addField("lastModifyTime", document.getLastModifyTime());
-                            solrDoc.addField("svnUrl", document.getSvnUrl());
-                            solrDoc.addField("content", document.getContent());
+                            solrDoc.addField("svnurl", document.getSvnUrl());
+                            solrDoc.addField("filecontent", document.getContent());
 
                             solrClient.add(solrDoc);
                         } catch (Exception e) {
@@ -98,7 +98,9 @@ public class SolrAdapter implements InitializingBean {
                             logger.error(e.getMessage(), e);
                         }
                     }
-                }finally {
+                }catch(Exception e){
+                  logger.error(e.getMessage(), e);
+                } finally {
                     commiting2Solr = false;
                     synchronized (commitingLock){
                         commitingLock.notify();
@@ -115,11 +117,13 @@ public class SolrAdapter implements InitializingBean {
      */
     public void addSolrDocument(SVNDocument document){
          try{
+             logger.info("准备提交文档 " + document.getDocName());
              while(commiting2Solr == true){
                  synchronized (commitingLock){
                      commitingLock.wait(500);
                  }
              }
+             logger.info("已提交文档 " + document.getDocName());
              submit2Solr.add(document);
          }catch(Exception e){
              logger.error(e.getMessage(), e);
@@ -148,7 +152,7 @@ public class SolrAdapter implements InitializingBean {
         List<SVNDocument> docs = new ArrayList<SVNDocument>();
 
         SolrQuery query = new SolrQuery("keywords:" + keyword);
-        query.setFields("revision","svnUrl","docName", "lastModifyTime", "author");
+        query.setFields("revision","svnurl","filename", "lastModifyTime", "lastModifyTime");
         //query.setSort("lastUpdateTime", ORDER.desc);
         query.setStart(0);
         query.setRows(50);
@@ -160,9 +164,9 @@ public class SolrAdapter implements InitializingBean {
         for (SolrDocument doc : response.getResults()) {
             SVNDocument d = new SVNDocument();
             d.setRevision(doc.getFieldValue("revision").toString());
-            d.setSvnUrl(doc.getFieldValue("svnUrl").toString());
-            d.setDocName(doc.getFieldValue("docName").toString());
-            d.setLastModifyAuthor(doc.getFieldValue("author").toString());
+            d.setSvnUrl(doc.getFieldValue("svnurl").toString());
+            d.setDocName(doc.getFieldValue("filename").toString());
+            d.setLastModifyAuthor(doc.getFieldValue("lastModifyTime").toString());
             docs.add(d);
         }
         return docs;

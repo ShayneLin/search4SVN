@@ -39,6 +39,8 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                 ThreadUtils.sleep(100);
                 String url = event.getUrl();
 
+                disruptorScheduleService.addHandled(url);
+
                 String key = event.getSvnKey();
 
                 logger.info("处理 url " + url);
@@ -46,6 +48,7 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
 
                 int result = svnAdapter.checkPath(url);
                 if(result == FileTypeConstants.DIRTYPE) {
+                    logger.info("处理目录： url " + url);
                     List<SVNDirEntry> entrys = svnAdapter.listFolder(url);
 
                     if (entrys != null) {
@@ -54,22 +57,26 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
 
                                 String newUrl = url + "/" + entry.getRelativePath();
                                 //disruptor publish new event with newUrl type 1;
+                                logger.info("处理目录： url " + newUrl);
                                 disruptorScheduleService.produceEvent(EventConstants.SVNEVENT, newUrl, key, null);
                             } else {
 
                                /* String newUrl = url + "/" + entry.getRelativePath();
                                 //disruptor publish new event with newUrl type 2;
                                 disruptorScheduleService.produceEvent(2, newUrl, key, null);*/
-                                parseDocContent(svnAdapter, url);
+                                String newUrl = url + "/" + entry.getRelativePath();
+                                logger.info("处理文件： url " + newUrl);
+                                parseDocContent(svnAdapter, newUrl);
 
                             }
                         }
                     }
                 }else if(result == FileTypeConstants.FILETYPE){
                     //disruptorScheduleService.produceEvent(2, url, key, null);
+                    logger.info("处理文件： url " + url);
                     parseDocContent(svnAdapter, url);
                 }
-                disruptorScheduleService.addHandled(url);
+
             }
         }catch (Exception e){
             logger.error(e.getMessage(), e);
@@ -91,9 +98,19 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     SVNDirEntry entry = (SVNDirEntry) objects[0];
                     byte[] bytes = (byte[]) objects[1];
 
+
                     Tika tika = new Tika();
 
                     String mimeType = tika.detect(bytes);
+                    String docName = FilenameUtils.getName(url);
+
+                    logger.info("处理文档名称： name " + docName);
+
+                    if(!DisruptorSVNWorker.this.accept(docName, mimeType)){//只接受指定的文件格式的文件，其他的不予理会
+                        logger.info("不接收 文档名称： name " + docName);
+                        return;
+                    }
+
 
                     String text = null;
                     try {
@@ -105,10 +122,7 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     }
                     text = StringUtils.trimWhitespace(text);
 
-                    String docName = FilenameUtils.getName(url);
-                    if(!DisruptorSVNWorker.this.accept(docName, mimeType)){//只接受指定的文件格式的文件，其他的不予理会
-                        return;
-                    }
+
 
                     SVNDocument document = new SVNDocument();
                     document.setDocName(docName);
@@ -147,15 +161,16 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
      */
     private boolean accept(String docName, String mimeType) {
         String extName = FilenameUtils.getExtension(docName);
+        logger.info("文档名称： name-extName: " + docName + " - " + extName);
         if(!StringUtils.isEmpty(extName)){
             if("txt".equalsIgnoreCase(extName)
-               && "doc".equalsIgnoreCase(extName)
-                    && "docx".equalsIgnoreCase(extName)
-                    && "ppt".equalsIgnoreCase(extName)
-                    && "xls".equalsIgnoreCase(extName)
-                    && "xlsx".equalsIgnoreCase(extName)
-                    && "java".equalsIgnoreCase(extName)
-                    && "sql".equalsIgnoreCase(extName)){
+               || "doc".equalsIgnoreCase(extName)
+                    || "docx".equalsIgnoreCase(extName)
+                    || "ppt".equalsIgnoreCase(extName)
+                    || "xls".equalsIgnoreCase(extName)
+                    || "xlsx".equalsIgnoreCase(extName)
+                    || "java".equalsIgnoreCase(extName)
+                    || "sql".equalsIgnoreCase(extName)){
                 return true;
             }
         }
