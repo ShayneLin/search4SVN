@@ -1,6 +1,9 @@
 package com.shark.search4SVN.service.disruptor;
 
 import com.lmax.disruptor.EventHandler;
+import com.shark.search4SVN.db.Document;
+import com.shark.search4SVN.db.DocumentDao;
+import com.shark.search4SVN.db.Md5Util;
 import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
@@ -20,6 +23,7 @@ import org.tmatesoft.svn.core.SVNNodeKind;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -103,7 +107,6 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
 
                     String mimeType = tika.detect(bytes);
                     String docName = FilenameUtils.getName(url);
-
                     logger.info("处理文档名称： name " + docName);
 
                     if(!DisruptorSVNWorker.this.accept(docName, mimeType)){//只接受指定的文件格式的文件，其他的不予理会
@@ -134,7 +137,22 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     document.setMimeType(mimeType);
 
                     disruptorScheduleService.produceEvent(EventConstants.SOLREVENT, null, null, document);
-
+                   //记录拉取的文档，判断是否将该文档记录到数据库表中
+                    Document toPersitDocument = new Document();
+                    Date date = entry.getDate();
+                    String docUrl = entry.getURL().toString();
+                    toPersitDocument.setEntityFlag(Md5Util.md5(docUrl));
+                    toPersitDocument.setName(docName);
+                    toPersitDocument.setDocUrl(docUrl);
+                    toPersitDocument.setModifyTime(date);
+                    DocumentDao documentDao = new DocumentDao();
+                    //调用插入或者更新文档记录
+                    Document isExistRecord = documentDao.getDocumentByEntityFlag(toPersitDocument.getEntityFlag());
+                    if (isExistRecord != null){
+                        //TODO:当该文档已存在数据库中
+                        return;
+                    }
+                    logger.info("往数据库中记录了："+docUrl);
                 }catch (Exception e){
                     logger.error(e.getMessage(), e);
                 }

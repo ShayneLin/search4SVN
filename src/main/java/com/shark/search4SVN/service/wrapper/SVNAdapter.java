@@ -48,7 +48,7 @@ public class SVNAdapter {
 	 * @param url
 	 * @return
 	 */
-	public Object[] checkoutFile(String url){//"", -1, null
+	public   Object[] checkoutFile(String url){//"", -1, null
 		SVNRepository repository = createRepository(url);
 		ByteArrayOutputStream outputStream = null;
 		try {
@@ -128,7 +128,7 @@ public class SVNAdapter {
 	private SVNRepository createRepository(String url){
 		
 		try {
-			return svnClientManager.createRepository(SVNURL.parseURIEncoded(url), false);
+			return svnClientManager.createRepository(SVNURL.parseURIEncoded(url), true);
 		} catch (SVNException e) {
 			logger.error("createRepository error",e);
 		}
