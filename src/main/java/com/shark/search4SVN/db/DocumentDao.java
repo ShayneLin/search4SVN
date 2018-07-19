@@ -1,15 +1,18 @@
 package com.shark.search4SVN.db;
 
+import com.shark.search4SVN.db.utils.ConnectionExecutorAdapter;
+import com.shark.search4SVN.db.utils.JdbcConnectionPoolHelper;
+import com.shark.search4SVN.db.utils.Md5Util;
+import com.shark.search4SVN.model.Document;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
 /**
  * @Author lcs
@@ -18,6 +21,7 @@ import java.util.List;
  */
 @Component
 public class DocumentDao {
+    private static final Logger logger = LoggerFactory.getLogger(DocumentDao.class);
 
     private static final String TABLE_NAME = "t_document";//表名
     private static final String INSERT_FIELD = "entity_flag,name,doc_url,modify_time,description";//插入的字段
@@ -48,7 +52,7 @@ public class DocumentDao {
 
     /**
      * 插入一条Document记录
-     * @param document
+     * @param document 要保存的Document
      * @return
      */
     public int insert(Document document) throws SQLException {
@@ -75,13 +79,29 @@ public class DocumentDao {
                     + "(" + INSERT_FIELD.substring(0, INSERT_FIELD.lastIndexOf(',')) + ")" + " values (" +
                     dataStr + ")";
         }
-        System.out.println(sql);
-        ConnectionAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
+        logger.info("插入Document的Insert语句："+sql);
+        ConnectionExecutorAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
         return  connectionAdapter.executeUpdate(sql);
     }
-    public int insert(String sql) throws SQLException {
-        ConnectionAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
-        return  connectionAdapter.executeUpdate(sql);
+
+    /**
+     * 更新Document
+     * @param toUpdateDataMap
+     * @param entityFlag
+     * @return
+     * @throws SQLException
+     */
+    public int updateDocument(Map<String,String> toUpdateDataMap,String entityFlag) throws SQLException {
+        String updateSQL = "update T_Document set toUpdateData where entity_flag = '"+entityFlag +"'";
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String,String> entry : toUpdateDataMap.entrySet()){
+            stringBuilder.append(entry.getKey()).append("=").append("'"+entry.getValue()+"'").append(",");
+        }
+        int len = stringBuilder.length();
+        updateSQL = updateSQL.replace("toUpdateData",stringBuilder.toString().substring(0,len-1));
+        ConnectionExecutorAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
+        logger.info("更新Document的Update语句："+updateSQL);
+        return  connectionAdapter.executeUpdate(updateSQL);
     }
 
     /**
@@ -92,8 +112,8 @@ public class DocumentDao {
      */
     public Document getDocumentByEntityFlag(String entityFlag) throws SQLException {
         String replaceStr = "' '";
-        String sql = "select "+SELECT_FIELD+" from " +TABLE_NAME+"where entity_flag ="+replaceStr.replace(" ",entityFlag);
-        ConnectionAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
+        String sql = "select "+SELECT_FIELD+" from " +TABLE_NAME+" where entity_flag ="+replaceStr.replace(" ",entityFlag);
+        ConnectionExecutorAdapter connectionAdapter = JdbcConnectionPoolHelper.getConnection();
         return  connectionAdapter.selectOne(sql);
     }
 }

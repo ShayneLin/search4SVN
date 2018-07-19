@@ -1,4 +1,4 @@
-package com.shark.search4SVN.db;
+package com.shark.search4SVN.db.utils;
 
 
 import java.io.File;

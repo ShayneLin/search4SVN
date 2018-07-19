@@ -1,9 +1,9 @@
 package com.shark.search4SVN.service.disruptor;
 
 import com.lmax.disruptor.EventHandler;
-import com.shark.search4SVN.db.Document;
+import com.shark.search4SVN.model.Document;
 import com.shark.search4SVN.db.DocumentDao;
-import com.shark.search4SVN.db.Md5Util;
+import com.shark.search4SVN.db.utils.Md5Util;
 import com.shark.search4SVN.pojo.SVNDocument;
 import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
@@ -23,8 +23,11 @@ import org.tmatesoft.svn.core.SVNNodeKind;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by qinghualiu on 2017/5/21.
@@ -146,12 +149,24 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     toPersitDocument.setDocUrl(docUrl);
                     toPersitDocument.setModifyTime(date);
                     DocumentDao documentDao = new DocumentDao();
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     //调用插入或者更新文档记录
                     Document isExistRecord = documentDao.getDocumentByEntityFlag(toPersitDocument.getEntityFlag());
+                    String dateStr = dateFormat.format(date);
                     if (isExistRecord != null){
                         //TODO:当该文档已存在数据库中
+                        String existDateStr = dateFormat.format(isExistRecord.getModifyTime());
+                        if(dateStr.equals(existDateStr))//使用该方式比较时间原因是，getTime()比较的是毫秒，所以即使时分秒相等，两个Date也未必一样。
+                            return;
+                        //时间不一致，说明有修改,进行更新
+                        Map<String,String> toUpdateDataMap = new HashMap<>();
+                        toUpdateDataMap.put("modify_time",dateStr);
+                        documentDao.updateDocument(toUpdateDataMap,toPersitDocument.getEntityFlag());
+                        logger.info("往数据库更新了："+docUrl);
                         return;
+
                     }
+                    documentDao.insert(toPersitDocument);
                     logger.info("往数据库中记录了："+docUrl);
                 }catch (Exception e){
                     logger.error(e.getMessage(), e);

@@ -1,9 +1,8 @@
-package com.shark.search4SVN.db;
+package com.shark.search4SVN.db.utils;
 
-import org.h2.jdbc.JdbcConnection;
 import org.h2.jdbcx.JdbcConnectionPool;
-
-import java.sql.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 
 /**
@@ -12,6 +11,7 @@ import java.sql.SQLException;
  * @Date Created in 17:28 2018/6/14
  */
 public class JdbcConnectionPoolHelper {
+    private static final Logger logger = LoggerFactory.getLogger(JdbcConnectionPoolHelper.class);
     private static JdbcConnectionPool connectionPool ;
     private static String DB_PATH = "db/searchSVNDB";
     private static String USERNAME = "sa";
@@ -27,11 +27,16 @@ public class JdbcConnectionPoolHelper {
 
     }
 
-    public static ConnectionAdapter  getConnection() throws SQLException {
+    /**
+     * 从连接池里取连接,封装过的Connection
+     * @return
+     * @throws SQLException
+     */
+    public static ConnectionExecutorAdapter  getConnection() throws SQLException {
         if (connectionPool.getMaxConnections() == connectionPool.getActiveConnections()){
-            System.out.println("没有空余的连接了");
+            logger.info("没有空余的连接了");
             return  null;
         }
-        return new ConnectionAdapter(connectionPool.getConnection());
+        return new ConnectionExecutorAdapter(connectionPool.getConnection());
     }
 }

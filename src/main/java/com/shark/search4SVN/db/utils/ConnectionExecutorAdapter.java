@@ -1,4 +1,8 @@
-package com.shark.search4SVN.db;
+package com.shark.search4SVN.db.utils;
+
+import com.shark.search4SVN.model.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,13 +15,14 @@ import java.util.List;
 
 /**
  * @Author lcs
- * @Description 自定义的Connection适配器
+ * @Description 自定义的Connection适配器,封装的Executor
  * @Date Created in 18:12 2018/6/26
  */
-public class ConnectionAdapter {
+public class ConnectionExecutorAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionExecutorAdapter.class);
     Connection connection = null;
 
-    public ConnectionAdapter(Connection connection) {
+    public ConnectionExecutorAdapter(Connection connection) {
         this.connection = connection;
 
     }
@@ -30,17 +35,20 @@ public class ConnectionAdapter {
      */
     public Document selectOne(String sql) throws SQLException {
         Statement statement = null;
+        Document document = null;
         try {
             statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
-            Document document = new Document();
-            document.setId(resultSet.getInt("id"));
-            document.setEntityFlag(resultSet.getString("entity_flag"));
-            document.setName(resultSet.getString("name"));
-            document.setDocUrl(resultSet.getString("doc_url"));
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            document.setModifyTime(dateFormatter.parse(resultSet.getString("modify_time")));
-            document.setDescription(resultSet.getString("description"));
+            if (resultSet.next()) {//取第一条
+                document = new Document();
+                document.setId(resultSet.getInt("id"));
+                document.setEntityFlag(resultSet.getString("entity_flag"));
+                document.setName(resultSet.getString("name"));
+                document.setDocUrl(resultSet.getString("doc_url"));
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                document.setModifyTime(dateFormatter.parse(resultSet.getString("modify_time")));
+                document.setDescription(resultSet.getString("description"));
+            }
             return document;
         } catch (SQLException e) {
             e.printStackTrace();

@@ -1,4 +1,4 @@
-package com.shark.search4SVN.db;
+package com.shark.search4SVN.model;
 
 import java.util.Date;
 
