@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shark.search4SVN.dao.DocumentMapper">
+  <resultMap id="BaseResultMap" type="com.shark.search4SVN.pojo.Document">
+    <id column="ID" jdbcType="INTEGER" property="id" />
+    <result column="ENTITY_FLAG" jdbcType="CHAR" property="entityFlag" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="DOC_URL" jdbcType="VARCHAR" property="docUrl" />
+    <result column="MODIFY_TIME" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, ENTITY_FLAG, NAME, DOC_URL, MODIFY_TIME, DESCRIPTION
+  </sql>
+
+  <insert id="insertSelective" parameterType="com.shark.search4SVN.pojo.Document">
+    insert into T_DOCUMENT
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="entityFlag != null">
+        ENTITY_FLAG,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="docUrl != null">
+        DOC_URL,
+      </if>
+      <if test="modifyTime != null">
+        MODIFY_TIME,
+      </if>
+      <if test="description != null">
+        DESCRIPTION,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="entityFlag != null">
+        #{entityFlag,jdbcType=CHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="docUrl != null">
+        #{docUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.shark.search4SVN.pojo.Document">
+    update T_DOCUMENT
+    <set>
+      <if test="entityFlag != null">
+        ENTITY_FLAG = #{entityFlag,jdbcType=CHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="docUrl != null">
+        DOC_URL = #{docUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        MODIFY_TIME = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="description != null">
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.shark.search4SVN.pojo.Document">
+    update T_DOCUMENT
+    set ENTITY_FLAG = #{entityFlag,jdbcType=CHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      DOC_URL = #{docUrl,jdbcType=VARCHAR},
+      MODIFY_TIME = #{modifyTime,jdbcType=TIMESTAMP},
+      DESCRIPTION = #{description,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <resultMap id="BaseResultMap" type="com.shark.search4SVN.pojo.Document">
+    <id column="ID" jdbcType="INTEGER" property="id" />
+    <result column="ENTITY_FLAG" jdbcType="CHAR" property="entityFlag" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="DOC_URL" jdbcType="VARCHAR" property="docUrl" />
+    <result column="MODIFY_TIME" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, ENTITY_FLAG, NAME, DOC_URL, MODIFY_TIME, DESCRIPTION
+  </sql>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from T_DOCUMENT
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.shark.search4SVN.pojo.Document">
+    insert into T_DOCUMENT (ID, ENTITY_FLAG, NAME, 
+      DOC_URL, MODIFY_TIME, DESCRIPTION
+      )
+    values (#{id,jdbcType=INTEGER}, #{entityFlag,jdbcType=CHAR}, #{name,jdbcType=VARCHAR}, 
+      #{docUrl,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{description,jdbcType=VARCHAR}
+      )
+  </insert>
+
+</mapper>
