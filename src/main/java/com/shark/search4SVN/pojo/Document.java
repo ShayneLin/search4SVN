@@ -3,17 +3,12 @@ package com.shark.search4SVN.pojo;
 import java.util.Date;
 
 public class Document {
-    private Integer id;
-
-    private String entityFlag;
-
-    private String name;
-
-    private String docUrl;
-
-    private Date modifyTime;
-
-    private String description;
+    private Integer id;//主键
+    private String entityFlag;//实体唯一标识
+    private String name;//文档名字
+    private String docUrl;//文档路径
+    private Date modifyTime;//文档最近修改时间
+    private String description;//描述，保留
 
     public Integer getId() {
         return id;

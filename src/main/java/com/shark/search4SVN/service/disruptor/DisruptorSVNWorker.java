@@ -1,22 +1,21 @@
 package com.shark.search4SVN.service.disruptor;
 
 import com.lmax.disruptor.EventHandler;
-import com.shark.search4SVN.model.Document;
 import com.shark.search4SVN.db.DocumentDao;
 import com.shark.search4SVN.db.utils.Md5Util;
+import com.shark.search4SVN.pojo.Document;
 import com.shark.search4SVN.pojo.SVNDocument;
+import com.shark.search4SVN.service.DocumentService;
 import com.shark.search4SVN.service.SVNService;
 import com.shark.search4SVN.service.wrapper.SVNAdapter;
 import com.shark.search4SVN.service.disruptor.event.SVNEvent;
-import com.shark.search4SVN.util.EventConstants;
-import com.shark.search4SVN.util.FileTypeConstants;
-import com.shark.search4SVN.util.ThreadManager;
-import com.shark.search4SVN.util.ThreadUtils;
+import com.shark.search4SVN.util.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -36,6 +35,8 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
     private static final Logger logger = LoggerFactory.getLogger(DisruptorSVNWorker.class);
 
     private SVNService svnService;
+
+    private DocumentService documentService;
 
     private DisruptorScheduleService disruptorScheduleService;
 
@@ -129,45 +130,52 @@ public class DisruptorSVNWorker implements EventHandler<SVNEvent> {
                     text = StringUtils.trimWhitespace(text);
 
 
+                    try {
+                        SVNDocument document = new SVNDocument();
+                        document.setDocName(docName);
+                        document.setRevision(String.valueOf(entry.getRevision()));
+                        document.setSvnUrl(url);
+                        document.setLastModifyAuthor(entry.getAuthor());
+                        document.setLastModifyTime(entry.getDate());
+                        document.setContent(text);
+                        document.setMimeType(mimeType);
 
-                    SVNDocument document = new SVNDocument();
-                    document.setDocName(docName);
-                    document.setRevision(String.valueOf(entry.getRevision()));
-                    document.setSvnUrl(url);
-                    document.setLastModifyAuthor(entry.getAuthor());
-                    document.setLastModifyTime(entry.getDate());
-                    document.setContent(text);
-                    document.setMimeType(mimeType);
-
-                    disruptorScheduleService.produceEvent(EventConstants.SOLREVENT, null, null, document);
-                   //记录拉取的文档，判断是否将该文档记录到数据库表中
-                    Document toPersitDocument = new Document();
-                    Date date = entry.getDate();
-                    String docUrl = entry.getURL().toString();
-                    toPersitDocument.setEntityFlag(Md5Util.md5(docUrl));
-                    toPersitDocument.setName(docName);
-                    toPersitDocument.setDocUrl(docUrl);
-                    toPersitDocument.setModifyTime(date);
-                    DocumentDao documentDao = new DocumentDao();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    //调用插入或者更新文档记录
-                    Document isExistRecord = documentDao.getDocumentByEntityFlag(toPersitDocument.getEntityFlag());
-                    String dateStr = dateFormat.format(date);
-                    if (isExistRecord != null){
-                        //TODO:当该文档已存在数据库中
-                        String existDateStr = dateFormat.format(isExistRecord.getModifyTime());
-                        if(dateStr.equals(existDateStr))//使用该方式比较时间原因是，getTime()比较的是毫秒，所以即使时分秒相等，两个Date也未必一样。
+                        disruptorScheduleService.produceEvent(EventConstants.SOLREVENT, null, null, document);
+                        //记录拉取的文档，判断是否将该文档记录到数据库表中
+                        Document toPersitDocument = new Document();
+                        Date date = entry.getDate();
+                        String docUrl = entry.getURL().toString();
+                        toPersitDocument.setEntityFlag(Md5Util.md5(docUrl));
+                        toPersitDocument.setName(docName);
+                        toPersitDocument.setDocUrl(docUrl);
+                        toPersitDocument.setModifyTime(date);
+                        DocumentDao documentDao = new DocumentDao();
+//                        DocumentService documentService = new DocumentService();
+                        DocumentService documentService = (DocumentService) ApplicationContextUtil.getInstace().getBean("documentService");
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        //调用插入或者更新文档记录
+//                    Document isExistRecord = documentDao.getDocumentByEntityFlag(toPersitDocument.getEntityFlag());
+                        Document isExistRecord = documentService.getDocumentByEntityFlag(toPersitDocument.getEntityFlag());
+                        String dateStr = dateFormat.format(date);
+                        if (isExistRecord != null){
+                            //TODO:当该文档已存在数据库中
+                            String existDateStr = dateFormat.format(isExistRecord.getModifyTime());
+                            if(dateStr.equals(existDateStr))//使用该方式比较时间原因是，getTime()比较的是毫秒，所以即使时分秒相等，两个Date也未必一样。
+                                return;
+                            //时间不一致，说明有修改,进行更新
+                            Map<String,Object> toUpdateDataMap = new HashMap<>();
+                            toUpdateDataMap.put("modify_time",dateStr);
+                            documentService.updateDocument(toUpdateDataMap,toPersitDocument.getEntityFlag());
+                            logger.info("往数据库更新了："+docUrl);
                             return;
-                        //时间不一致，说明有修改,进行更新
-                        Map<String,String> toUpdateDataMap = new HashMap<>();
-                        toUpdateDataMap.put("modify_time",dateStr);
-                        documentDao.updateDocument(toUpdateDataMap,toPersitDocument.getEntityFlag());
-                        logger.info("往数据库更新了："+docUrl);
-                        return;
 
+                        }
+//                    documentDao.insert(toPersitDocument);
+                        documentService.insert(toPersitDocument);
+                        logger.info("往数据库中记录了："+docUrl);
+                    } catch (Exception e) {
+                        logger.info(e.getMessage(),e);
                     }
-                    documentDao.insert(toPersitDocument);
-                    logger.info("往数据库中记录了："+docUrl);
                 }catch (Exception e){
                     logger.error(e.getMessage(), e);
                 }

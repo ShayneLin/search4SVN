@@ -19,7 +19,7 @@ import java.util.Map;
  * @Description 执行数据库操作
  * @Date Created in 17:54 2018/6/14
  */
-@Component
+//@Component
 public class DocumentDao {
     private static final Logger logger = LoggerFactory.getLogger(DocumentDao.class);
 

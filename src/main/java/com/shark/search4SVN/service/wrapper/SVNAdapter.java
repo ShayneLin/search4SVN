@@ -128,7 +128,7 @@ public class SVNAdapter {
 	private SVNRepository createRepository(String url){
 		
 		try {
-			return svnClientManager.createRepository(SVNURL.parseURIEncoded(url), true);
+			return svnClientManager.createRepository(SVNURL.parseURIEncoded(url), false);
 		} catch (SVNException e) {
 			logger.error("createRepository error",e);
 		}
